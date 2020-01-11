@@ -8,8 +8,13 @@ import numpy as np
 from tqdm import tqdm
 import shutil
 import csv
-import os
+import os, sys
+import shutil
 
+
+if len (sys.argv) != 2 :
+    print ("Usage: python duplicate_finder.py <root_dir> ")
+    sys.exit (1)
 
 
 def file_hash(filename):
@@ -18,7 +23,8 @@ def file_hash(filename):
 
 
 
-path = 'H:\\Virtual Machines\\'
+path = str(sys.argv[1])
+print(path)
 file_list=[os.path.join(r,file) for r,d,f in os.walk(path) for file in f]
 print(len(file_list))
 
@@ -27,16 +33,12 @@ duplicates= []
 hash_keys = dict()
 
 
-for i in tqdm(file_list[10:]):
-#for i in itertools.islice(file_list , 1, 5000):
+for i in tqdm(file_list):
     filehash = file_hash(i)
     if filehash not in hash_keys:
         hash_keys[filehash]= i
     else:
         duplicates.append((i, filehash))
-
-
-# In[28]:
 
 
 # # for file_indexes in duplicates:
@@ -50,24 +52,18 @@ for i in tqdm(file_list[10:]):
 #         plt.show()
 #     except OSError as e:
 #         continue
+try:
+    duplist= open(os.path.join(path,'duplist.csv'), "w", newline='')
+except Exception as e:
+    print(e)
+    exit(-1)
 
-
-# In[29]:
-
-
-#os.mkdir('duplicates')
-
-
-# In[35]:
-
-
-
-   # shutil.move(file_indexes[0],os.getcwd()+'/duplicates/'+hash_keys[file_indexes[1]])
-with open('c:\\temp\\myduplist.csv', "w", newline='') as duplist:
+with duplist:
     csvwriter = csv.writer(duplist,delimiter=',')
-    csvwriter.writerow(['Duplicate File','Orginal File'])
+    csvwriter.writerow(['Original File','Duplicate File'])
     for file_indexes in duplicates:
-        csvwriter.writerow([file_indexes[0],hash_keys[file_indexes[1]]])
+        csvwriter.writerow([hash_keys[file_indexes[1]],[file_indexes[0]]])
     
-
-
+if(str.lower(input("Validate the compare file. Press Y to delete "))=='y'):
+   for k,v in duplicates:
+       os.remove(k)
