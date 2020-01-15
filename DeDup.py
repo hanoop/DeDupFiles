@@ -1,29 +1,27 @@
 
-import hashlib
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-import time
+from hashlib import md5
 import numpy as np
 from tqdm import tqdm
-import shutil
-import csv
-import os, sys
+from csv import writer
+import os
+import sys
+
 
 
 if len (sys.argv) != 2 :
-    print ("Usage: python duplicate_finder.py <root_dir> ")
+    print ("Usage: python DeDup.py <root_dir> or DeDup.exe <root dir> ")
     sys.exit (1)
 
 
 def file_hash(filename):
     with open(filename, 'rb') as fp:
-        return hashlib.md5(fp.read()).hexdigest()
+        return md5(fp.read()).hexdigest()
 
 
 
 path = str(sys.argv[1])
 file_list=[os.path.join(r,file) for r,d,f in os.walk(path) for file in f]
-print("Files in path: "len(file_list))
+print("Files in path: ",len(file_list),"\n")
 
 
 duplicates= []
@@ -37,18 +35,6 @@ for i in tqdm(file_list):
     else:
         duplicates.append((i, filehash))
 
-
-# # for file_indexes in duplicates:
-#     try:
-#         plt.subplot(121),plt.imshow(Image.open(file_indexes[0]))
-#         dupfilename = file_indexes[0]
-#         plt.title(dupfilename[6:11]+ ' duplicate')
-#         plt.subplot(122),plt.imshow(Image.open(hash_keys[file_indexes[1]]))
-#         orgfilename=str(hash_keys[file_indexes[1]])
-#         plt.title(orgfilename[6:11])
-#         plt.show()
-#     except OSError as e:
-#         continue
 try:
     duplist= open(os.path.join(path,'DuplicatesList.csv'), "w", newline='')
 except Exception as e:
@@ -58,7 +44,7 @@ except Exception as e:
 totalfilesize=0
 
 with duplist:
-    csvwriter = csv.writer(duplist,delimiter=',')
+    csvwriter = writer(duplist,delimiter=',')
     csvwriter.writerow(['Original File','Duplicate File','File Size (KB)'])
     for file_indexes in duplicates:
         filesize = os.stat(file_indexes[0]).st_size   ## Get file size in bytes
@@ -66,11 +52,15 @@ with duplist:
         csvwriter.writerow([hash_keys[file_indexes[1]],file_indexes[0],filesize>>10])
 
 print("Duplicate Files Identified:",len(duplicates),"\n")
-print("Total size of duplicates: ", totalfilesize,"\n")    
+print("Total size of duplicates(MB): ", totalfilesize>>20,"\n")    
+
 if(str.lower(input("Validate the compare file. Press Y to proceed with delete "))=='y'):
    for k,v in duplicates:
         try:
             os.remove(k)
         except Exception as e:
             print(e)
-print("Duplicates Deleted","\n")
+   print('Duplicates Deleted','\n')
+else:
+    print("No changes made",'\n')    
+
