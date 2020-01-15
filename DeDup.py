@@ -10,6 +10,7 @@ import sys
 
 if len (sys.argv) != 2 :
     print ("Usage: python DeDup.py <root_dir> or DeDup.exe <root dir> ")
+    os.system('pause')
     sys.exit (1)
 
 
@@ -52,15 +53,15 @@ with duplist:
         csvwriter.writerow([hash_keys[file_indexes[1]],file_indexes[0],filesize>>10])
 
 print("Duplicate Files Identified:",len(duplicates),"\n")
-print("Total size of duplicates(MB): ", totalfilesize>>20,"\n")    
+print("Total size of duplicates(MB): ", round(totalfilesize / 1048576, 2),"\n")    
 
-if(str.lower(input("Validate the compare file. Press Y to proceed with delete "))=='y'):
+if(str.lower(input("Validate the compare file located at: "+os.path.join(path,'DuplicatesList.csv')+'\n'+"Press Y to proceed with delete "))=='y'):
    for k,v in duplicates:
         try:
             os.remove(k)
         except Exception as e:
             print(e)
-   print('Duplicates Deleted','\n')
+   print('\n','Duplicates Deleted','\n')
 else:
-    print("No changes made",'\n')    
+    print('\n','No changes made','\n')    
 
