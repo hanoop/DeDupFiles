@@ -1,6 +1,5 @@
 
 import hashlib
-from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import time
@@ -9,7 +8,6 @@ from tqdm import tqdm
 import shutil
 import csv
 import os, sys
-import shutil
 
 
 if len (sys.argv) != 2 :
@@ -24,9 +22,8 @@ def file_hash(filename):
 
 
 path = str(sys.argv[1])
-print(path)
 file_list=[os.path.join(r,file) for r,d,f in os.walk(path) for file in f]
-print(len(file_list))
+print("Files in path: "len(file_list))
 
 
 duplicates= []
@@ -53,17 +50,27 @@ for i in tqdm(file_list):
 #     except OSError as e:
 #         continue
 try:
-    duplist= open(os.path.join(path,'duplist.csv'), "w", newline='')
+    duplist= open(os.path.join(path,'DuplicatesList.csv'), "w", newline='')
 except Exception as e:
     print(e)
     exit(-1)
 
+totalfilesize=0
+
 with duplist:
     csvwriter = csv.writer(duplist,delimiter=',')
-    csvwriter.writerow(['Original File','Duplicate File'])
+    csvwriter.writerow(['Original File','Duplicate File','File Size (KB)'])
     for file_indexes in duplicates:
-        csvwriter.writerow([hash_keys[file_indexes[1]],[file_indexes[0]]])
-    
-if(str.lower(input("Validate the compare file. Press Y to delete "))=='y'):
+        filesize = os.stat(file_indexes[0]).st_size   ## Get file size in bytes
+        totalfilesize+=filesize
+        csvwriter.writerow([hash_keys[file_indexes[1]],file_indexes[0],filesize>>10])
+
+print("Duplicate Files Identified:",len(duplicates),"\n")
+print("Total size of duplicates: ", totalfilesize,"\n")    
+if(str.lower(input("Validate the compare file. Press Y to proceed with delete "))=='y'):
    for k,v in duplicates:
-       os.remove(k)
+        try:
+            os.remove(k)
+        except Exception as e:
+            print(e)
+print("Duplicates Deleted","\n")
